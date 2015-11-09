@@ -79,13 +79,45 @@ stdscr.chgat(curses.LINES-1, 30, 1, curses.A_BOLD | curses.color_pair(1))
 #window to display gauge setup
 data_window = curses.newwin(curses.LINES-2, curses.COLS, 1, 0)
 
-#creating subwindow to cleanly dispay text without touching window's borders
-data_text_window = data_window.subwin(curses.LINES-6, curses.COLS-4, 3, 2)
+#border windows
+data_text_border_window = data_window.subwin(curses.LINES-6, (curses.COLS-4)/2, 3, 2)
+data_logging_border_window = data_window.subwin(curses.LINES-6, (curses.COLS-4)/2, 3, 
 
-data_text_window.addstr("Press 'r' to load data")
+(curses.COLS-4)/2 + 2)
+
+
+
+#creating subwindow to cleanly display text without touching window's borders
+data_text_window = data_text_border_window.subwin(curses.LINES-8, (curses.COLS-6)/2-1, 4, 
+
+3)
+
+
+#subwindow for showing pressure log
+data_logging_window = data_logging_border_window.subwin(curses.LINES-8, (curses.COLS-6)/2-
+
+1, 4, (curses.COLS-4)/2 + 3)
+
+
+
+
+#data_text_window.addstr("Press 'R' to load data")
+#data_logging_window.addstr("Press 'P' to log here")
+
 
 #draw a box around main window
 data_window.box()
+
+data_text_border_window.box()
+data_logging_border_window.box()
+
+#data_logging_window.box()
+#data_text_window.box()
+
+
+data_text_window.addstr("Press 'r' to load data")
+data_logging_window.addstr("Press 'p' to log here")
+
 
 #update internal curses structures
 stdscr.noutrefresh()
