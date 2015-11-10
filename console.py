@@ -7,6 +7,8 @@
 #s save pressure data
 #q quit
 
+#pgup/pgdn to scroll the pressure window
+
 #import serial
 #import time
 import curses
@@ -26,7 +28,10 @@ def get_MKS_data():
 	
 	return return_data
 
-
+def get_pressure_data():
+	return_data = ""
+	return_data += "Pressure:\t9.00E2\n"
+	return return_data
 
 send = ""
 out = ""
@@ -81,22 +86,16 @@ data_window = curses.newwin(curses.LINES-2, curses.COLS, 1, 0)
 
 #border windows
 data_text_border_window = data_window.subwin(curses.LINES-6, (curses.COLS-4)/2, 3, 2)
-data_logging_border_window = data_window.subwin(curses.LINES-6, (curses.COLS-4)/2, 3, 
-
-(curses.COLS-4)/2 + 2)
+data_logging_border_window = data_window.subwin(curses.LINES-6, (curses.COLS-4)/2, 3, (curses.COLS-4)/2 + 2)
 
 
 
 #creating subwindow to cleanly display text without touching window's borders
-data_text_window = data_text_border_window.subwin(curses.LINES-8, (curses.COLS-6)/2-1, 4, 
-
-3)
+data_text_window = data_text_border_window.subwin(curses.LINES-8, (curses.COLS-6)/2-1, 4, 3)
 
 
 #subwindow for showing pressure log
-data_logging_window = data_logging_border_window.subwin(curses.LINES-8, (curses.COLS-6)/2-
-
-1, 4, (curses.COLS-4)/2 + 3)
+data_logging_window = data_logging_border_window.subwin(curses.LINES-8, (curses.COLS-6)/2-1, 4, (curses.COLS-4)/2 + 3)
 
 
 
@@ -116,7 +115,7 @@ data_logging_border_window.box()
 
 
 data_text_window.addstr("Press 'r' to load data")
-data_logging_window.addstr("Press 'p' to log here")
+data_logging_window.addstr("Press 'p' to log pressure data here")
 
 
 #update internal curses structures
@@ -137,6 +136,14 @@ while True:
 		data_text_window.clear()
 		data_text_window.addstr(get_MKS_data())
 
+	elif c == ord('p') or c == ord('P'):
+		data_logging_window.clear()
+
+		for x in range(0, 10):
+			data_logging_window.addstr(get_pressure_data())
+			data_logging_window.refresh()
+
+
 	elif c == ord('q') or c == ord('Q'):
 		break
 
@@ -145,6 +152,9 @@ while True:
 	stdscr.noutrefresh()
 	data_window.noutrefresh()
 	data_text_window.noutrefresh()
+
+		
+
 	curses.doupdate()
 
 
