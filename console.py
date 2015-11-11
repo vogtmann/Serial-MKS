@@ -33,6 +33,46 @@ def get_pressure_data():
 	return_data += "Pressure:\t9.00E2\n"
 	return return_data
 
+def loop():
+
+	continuing = 1
+
+	c = data_window.getch()
+
+
+	if c == ord('r') or c == ord('R'):
+		data_text_window.clear()
+		data_text_window.addstr("Getting MKS data...", curses.color_pair(3))
+
+		data_text_window.refresh()
+		data_text_window.clear()
+		data_text_window.addstr(get_MKS_data())
+
+	elif c == ord('p') or c == ord('P'):
+		data_logging_window.clear()
+
+		for x in range(0, 10):
+			data_logging_window.addstr(get_pressure_data())
+			data_logging_window.refresh()
+
+	elif c == ord('q') or c == ord('Q'):
+		continuing = 0
+
+	
+	#refresh windows
+	stdscr.noutrefresh()
+	data_window.noutrefresh()
+	data_text_window.noutrefresh()
+
+		
+
+	curses.doupdate()
+
+	return continuing
+
+
+	
+
 send = ""
 out = ""
 
@@ -126,36 +166,11 @@ data_window.noutrefresh()
 curses.doupdate()
 
 while True:
-	c = data_window.getch()
-
-	if c == ord('r') or c == ord('R'):
-		data_text_window.clear()
-		data_text_window.addstr("Getting MKS data...", curses.color_pair(3))
-
-		data_text_window.refresh()
-		data_text_window.clear()
-		data_text_window.addstr(get_MKS_data())
-
-	elif c == ord('p') or c == ord('P'):
-		data_logging_window.clear()
-
-		for x in range(0, 10):
-			data_logging_window.addstr(get_pressure_data())
-			data_logging_window.refresh()
-
-
-	elif c == ord('q') or c == ord('Q'):
+	if not loop():
 		break
 
-	
-	#refresh windows
-	stdscr.noutrefresh()
-	data_window.noutrefresh()
-	data_text_window.noutrefresh()
 
-		
 
-	curses.doupdate()
 
 
 #restore terminal settings
