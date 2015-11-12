@@ -33,7 +33,7 @@ def get_pressure_data():
 	return_data += "Pressure:\t9.00E2\n"
 	return return_data
 
-def loop():
+def loop(data_window, data_text_window, data_logging_window, stdscr):
 
 	continuing = 1
 
@@ -71,7 +71,64 @@ def loop():
 	return continuing
 
 
+def main(stdscr):
+	curses.curs_set(0)
 	
+
+	#some color choices
+	curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+	curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+	curses.init_pair(3, curses.COLOR_BLUE, curses.COLOR_BLACK)
+
+	#header
+	stdscr.addstr("MKS INTERFACE", curses.A_REVERSE)
+	stdscr.chgat(-1, curses.A_REVERSE)
+
+	stdscr.addstr(curses.LINES-1, 0, "'r' to refresh, 'p' to poll, 'q' to quit")
+
+
+	# green r, blue p, red q
+	stdscr.chgat(curses.LINES-1, 1, 1, curses.A_BOLD | curses.color_pair(2))
+	stdscr.chgat(curses.LINES-1, 17, 1, curses.A_BOLD | curses.color_pair(3))
+	stdscr.chgat(curses.LINES-1, 30, 1, curses.A_BOLD | curses.color_pair(1))
+	
+
+	#window to display gauge setup
+	data_window = curses.newwin(curses.LINES-2, curses.COLS, 1, 0)
+
+	#border windows
+	data_text_border_window = data_window.subwin(curses.LINES-6, (curses.COLS-4)/2, 3, 2)
+	data_logging_border_window = data_window.subwin(curses.LINES-6, (curses.COLS-4)/2, 3, (curses.COLS-4)/2 + 2)
+
+	
+	#creating subwindow to cleanly display text without touching window's borders
+	data_text_window = data_text_border_window.subwin(curses.LINES-8, (curses.COLS-6)/2-1, 4, 3)
+
+
+	#subwindow for showing pressure log
+	data_logging_window = data_logging_border_window.subwin(curses.LINES-8, (curses.COLS-6)/2-1, 4, (curses.COLS-4)/2 + 3)
+
+	#draw a box around main window
+	data_window.box()
+
+	data_text_border_window.box()
+	data_logging_border_window.box()
+
+	data_text_window.addstr("Press 'r' to load data")
+	data_logging_window.addstr("Press 'p' to log pressure data here")
+
+	#update internal curses structures
+	stdscr.noutrefresh()
+	data_window.noutrefresh()
+
+	#redraw screen
+	curses.doupdate()
+
+	while True:
+		if not loop(data_window, data_text_window, data_logging_window, stdscr):
+			break
+
+
 
 send = ""
 out = ""
@@ -80,6 +137,8 @@ out = ""
 preamble = "@253" #attention + default address, needed even with RS232
 command = ""
 terminator = ";FF"
+
+curses.wrapper(main)
 
 
 #Serial port communication
@@ -92,90 +151,3 @@ terminator = ";FF"
 #	port.close()
 
 
-stdscr = curses.initscr()
-
-#initialize screen
-curses.noecho()
-curses.cbreak()
-curses.curs_set(0)
-
-if curses.has_colors():
-	curses.start_color()
-
-#some color choices
-curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
-curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
-curses.init_pair(3, curses.COLOR_BLUE, curses.COLOR_BLACK)
-
-
-#header
-stdscr.addstr("MKS INTERFACE", curses.A_REVERSE)
-stdscr.chgat(-1, curses.A_REVERSE)
-
-
-stdscr.addstr(curses.LINES-1, 0, "'r' to refresh, 'p' to poll, 'q' to quit")
-
-
-# green r, blue p, red q
-stdscr.chgat(curses.LINES-1, 1, 1, curses.A_BOLD | curses.color_pair(2))
-stdscr.chgat(curses.LINES-1, 17, 1, curses.A_BOLD | curses.color_pair(3))
-stdscr.chgat(curses.LINES-1, 30, 1, curses.A_BOLD | curses.color_pair(1))
-
-#window to display gauge setup
-data_window = curses.newwin(curses.LINES-2, curses.COLS, 1, 0)
-
-#border windows
-data_text_border_window = data_window.subwin(curses.LINES-6, (curses.COLS-4)/2, 3, 2)
-data_logging_border_window = data_window.subwin(curses.LINES-6, (curses.COLS-4)/2, 3, (curses.COLS-4)/2 + 2)
-
-
-
-#creating subwindow to cleanly display text without touching window's borders
-data_text_window = data_text_border_window.subwin(curses.LINES-8, (curses.COLS-6)/2-1, 4, 3)
-
-
-#subwindow for showing pressure log
-data_logging_window = data_logging_border_window.subwin(curses.LINES-8, (curses.COLS-6)/2-1, 4, (curses.COLS-4)/2 + 3)
-
-
-
-
-#data_text_window.addstr("Press 'R' to load data")
-#data_logging_window.addstr("Press 'P' to log here")
-
-
-#draw a box around main window
-data_window.box()
-
-data_text_border_window.box()
-data_logging_border_window.box()
-
-#data_logging_window.box()
-#data_text_window.box()
-
-
-data_text_window.addstr("Press 'r' to load data")
-data_logging_window.addstr("Press 'p' to log pressure data here")
-
-
-#update internal curses structures
-stdscr.noutrefresh()
-data_window.noutrefresh()
-
-#redraw screen
-curses.doupdate()
-
-while True:
-	if not loop():
-		break
-
-
-
-
-
-#restore terminal settings
-curses.nocbreak()
-curses.echo()
-curses.curs_set(1)
-
-curses.endwin()
