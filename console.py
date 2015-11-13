@@ -10,9 +10,20 @@
 #pgup/pgdn to scroll the pressure window
 
 #import serial
-#import time
+import time
 import curses
+import threading
 
+def update_pressure(data_logging_window):
+	data_logging_window.clear()
+	for x in range(0,10):
+		
+		time.sleep(1)	
+		data_logging_window.addstr(get_pressure_data())
+		data_logging_window.refresh()
+		
+
+	
 
 def get_MKS_data():
 	return_data = ""
@@ -43,17 +54,21 @@ def loop(data_window, data_text_window, data_logging_window, stdscr):
 	if c == ord('r') or c == ord('R'):
 		data_text_window.clear()
 		data_text_window.addstr("Getting MKS data...", curses.color_pair(3))
-
 		data_text_window.refresh()
+		
 		data_text_window.clear()
 		data_text_window.addstr(get_MKS_data())
 
 	elif c == ord('p') or c == ord('P'):
 		data_logging_window.clear()
+		data_logging_window.addstr("Starting log...")
+		data_logging_window.refresh()		
 
-		for x in range(0, 10):
-			data_logging_window.addstr(get_pressure_data())
-			data_logging_window.refresh()
+		pressure = threading.Thread(target=update_pressure, args=(data_logging_window,))
+		pressure.daemon = True
+		pressure.start()
+
+
 
 	elif c == ord('q') or c == ord('Q'):
 		continuing = 0
