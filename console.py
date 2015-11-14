@@ -1,15 +1,17 @@
-#without serial commands
-
-#commands:
-#r refresh
-#a send arbitrary command
-#p poll pressure data
-#s save pressure data
+#implemented commands:
 #q quit
 
+#partial support:
+#c connect to gauge via serial
+#r refresh info
+#p poll pressure data
+
+#future commands:
+#s save pressure data
+#a send arbitrary command
 #pgup/pgdn to scroll the pressure window
 
-#import serial
+import serial
 import time
 import curses
 import threading
@@ -25,8 +27,8 @@ def update_pressure(data_logging_window):
 
 	
 
-def get_MKS_data():
-	return_data = ""
+def get_MKS_data():				#these are the MKS925 commands to query
+	return_data = ""			#the related piece of information
 	return_data += "address: \n"		#AD?
 	return_data += "baud: \n"		#BR?
 	return_data += "units: \n"		#U?	
@@ -67,8 +69,12 @@ def loop(data_window, data_text_window, data_logging_window, stdscr):
 		pressure = threading.Thread(target=update_pressure, args=(data_logging_window,))
 		pressure.daemon = True
 		pressure.start()
-
-
+	
+	elif c == ord('c') or c == ord('C'):
+		#my serial device is at /dev/ttyUSB0, and all of my gauges are set to 9600
+		#however a good improvment would be to confirm, ideally change, these settings
+		port = serial.Serial("/dev/ttyUSB0", baudrate=9600, timeout=3.0)
+		port_connected = 1
 
 	elif c == ord('q') or c == ord('Q'):
 		continuing = 0
@@ -157,7 +163,6 @@ curses.wrapper(main)
 
 
 #Serial port communication
-#	port = serial.Serial("/dev/ttyUSB0", baudrate=9600, timeout=3.0)
 #	assemble = preamble + command + terminator	
 #	port.write(assemble)
 #	time.sleep(1)
